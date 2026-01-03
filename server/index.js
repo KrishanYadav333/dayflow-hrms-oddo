@@ -36,10 +36,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(limiter);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dayflow-hrms', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dayflow-hrms')
 .then(() => console.log('[MongoDB] Connected successfully'))
 .catch((err) => console.error('[MongoDB] Connection error:', err));
 

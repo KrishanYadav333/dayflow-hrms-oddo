@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import api from '../api';
@@ -7,21 +7,19 @@ const AllAttendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('date');
 
-  useEffect(() => {
-    fetchAttendance();
-  }, []);
-
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     try {
-      // Get today's date
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      setLoading(true);
+      const dateToFetch = new Date(selectedDate);
+      dateToFetch.setHours(0, 0, 0, 0);
       
-      // Fetch attendance for today only
       const response = await api.get('/attendance/all', {
         params: {
-          date: today.toISOString()
+          date: dateToFetch.toISOString()
         }
       });
       setAttendance(response.data.data);
@@ -30,7 +28,31 @@ const AllAttendance = () => {
       setError('Failed to load attendance records');
       setLoading(false);
     }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [fetchAttendance]);
+
+  const goToPreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setSelectedDate(newDate);
   };
+
+  const goToNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setSelectedDate(newDate);
+  };
+
+  const filteredAttendance = attendance.filter(record => {
+    if (!searchQuery) return true;
+    const employeeName = record.employee?.firstName + ' ' + record.employee?.lastName;
+    const employeeId = record.employee?.employeeId || '';
+    return employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           employeeId.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   if (loading) {
     return (
@@ -48,9 +70,82 @@ const AllAttendance = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Today's Attendance</h1>
-          <p className="text-gray-600 text-lg">Employees present on {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance</h1>
+        </div>
+
+        {/* Search and Navigation Bar */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search employees..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
+                />
+                <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={goToPreviousDay}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={goToNextDay}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('date')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    viewMode === 'date' 
+                      ? 'bg-primary-bright text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Date
+                </button>
+                <button
+                  onClick={() => setViewMode('day')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    viewMode === 'day' 
+                      ? 'bg-primary-bright text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Day
+                </button>
+                
+                <div className="ml-4 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                  <span className="text-sm font-medium text-gray-700">
+                    {selectedDate.toLocaleDateString('en-GB', { 
+                      day: '2-digit', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -62,94 +157,111 @@ const AllAttendance = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          {attendance.length === 0 ? (
+        <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+          {loading ? (
             <div className="p-12 text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 bg-gray-100 rounded-full">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
+              <div className="flex justify-center items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-bright"></div>
+                <span className="ml-3 text-gray-600">Loading attendance...</span>
               </div>
-              <p className="text-gray-500 text-lg font-medium">No attendance records found</p>
-              <p className="text-gray-400 text-sm mt-2">Attendance data will appear here</p>
+            </div>
+          ) : filteredAttendance.length === 0 ? (
+            <div className="p-12 text-center">
+              <p className="text-gray-500 text-lg font-medium">
+                {searchQuery ? 'No matching records found' : 'No attendance records found'}
+              </p>
+              <p className="text-gray-400 text-sm mt-2">
+                {searchQuery ? 'Try adjusting your search' : 'Attendance data will appear here'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-primary-bright to-primary-medium text-white">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
-                      Employee ID
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                      Emp
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
-                      Employee Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Check In
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Check Out
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
-                      Working Hours
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                      Work Hours
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">
-                      Status
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                      Extra hours
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {attendance.map((record, index) => (
-                    <tr key={index} className="hover:bg-blue-50 transition-colors duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                        {record.employeeId?.employeeId || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        {record.employeeId ? `${record.employeeId.firstName} ${record.employeeId.lastName}` : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {new Date(record.date).toLocaleDateString('en-GB')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {record.checkIn ? (
-                          <span className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            {new Date(record.checkIn).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        ) : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {record.checkOut ? (
-                          <span className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                            </svg>
-                            {new Date(record.checkOut).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        ) : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                        {record.workingHours ? `${record.workingHours} hrs` : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-4 py-2 inline-flex text-xs leading-5 font-bold rounded-lg shadow-sm border ${
-                          record.status === 'Present' ? 'bg-green-100 text-green-800 border-green-200' :
-                          record.status === 'Absent' ? 'bg-red-100 text-red-800 border-red-200' :
-                          record.status === 'Half-day' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                          'bg-blue-100 text-blue-800 border-blue-200'
-                        }`}>
-                          {record.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {filteredAttendance.map((record, index) => {
+                    const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
+                    const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
+                    let workHours = '--';
+                    let extraHours = '--';
+                    
+                    if (checkInTime && checkOutTime) {
+                      const diffMs = checkOutTime - checkInTime;
+                      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                      workHours = `${hours}h ${minutes}m`;
+                      
+                      const totalHours = hours + minutes / 60;
+                      if (totalHours > 8) {
+                        const extra = totalHours - 8;
+                        const extraH = Math.floor(extra);
+                        const extraM = Math.floor((extra - extraH) * 60);
+                        extraHours = `${extraH}h ${extraM}m`;
+                      } else {
+                        extraHours = '0h 0m';
+                      }
+                    }
+                    
+                    return (
+                      <tr key={index} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 flex-shrink-0">
+                              <div className="h-10 w-10 rounded-full bg-primary-bright flex items-center justify-center text-white font-semibold">
+                                {record.employee?.firstName?.[0]}{record.employee?.lastName?.[0]}
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {record.employee?.firstName} {record.employee?.lastName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {record.employee?.employeeId}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {checkInTime ? checkInTime.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          }) : '--'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {checkOutTime ? checkOutTime.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          }) : '--'}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                          {workHours}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-green-600">
+                          {extraHours}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

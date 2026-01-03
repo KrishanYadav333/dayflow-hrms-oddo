@@ -1,9 +1,14 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const sendEmail = async (to, subject, html) => {
   try {
+    if (!resend) {
+      console.warn('Email service not configured - skipping email to:', to);
+      return { success: true, data: { message: 'Email service not configured' } };
+    }
+
     const { data, error } = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'noreply@dayflow-hrms.com',
       to,

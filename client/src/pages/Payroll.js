@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
@@ -16,12 +16,7 @@ const Payroll = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  useEffect(() => {
-    fetchEmployees();
-    fetchPayrollData();
-  }, [selectedMonth, selectedYear]);
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await api.get('/employee/all');
       setEmployees(response.data.data);
@@ -30,11 +25,10 @@ const Payroll = () => {
       setError('Failed to load employee data');
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchPayrollData = async () => {
+  const fetchPayrollData = useCallback(async () => {
     try {
-      // Get attendance data for the selected month
       const startDate = new Date(selectedYear, selectedMonth, 1);
       const endDate = new Date(selectedYear, selectedMonth + 1, 0);
       
@@ -45,7 +39,6 @@ const Payroll = () => {
         }
       });
       
-      // Create a map of employee attendance data
       const dataMap = {};
       if (response.data.data) {
         response.data.data.forEach(item => {
@@ -56,7 +49,12 @@ const Payroll = () => {
     } catch (error) {
       console.error('Failed to load payroll data:', error);
     }
-  };
+  }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    fetchEmployees();
+    fetchPayrollData();
+  }, [fetchEmployees, fetchPayrollData]);
 
   const handleEdit = (employee) => {
     setEditingId(employee._id);
@@ -92,9 +90,6 @@ const Payroll = () => {
     const data = payrollData[employeeId];
     if (!data) return 0;
     
-    // Total working days in month minus leave days
-    const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-    const workingDays = totalDays - 8; // Assuming ~8 Sundays/holidays per month
     const presentDays = data.presentDays || 0;
     const paidLeaveDays = data.paidLeaveDays || 0;
     const halfDays = (data.halfDays || 0) * 0.5;
