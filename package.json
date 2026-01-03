@@ -1,0 +1,27 @@
+{
+  "name": "dayflow-hrms-oddo",
+  "version": "1.0.0",
+  "description": "Dayflow HRMS - Human Resource Management System",
+  "main": "index.js",
+  "scripts": {
+    "install-deps": "cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build"
+  },
+  "keywords": [
+    "hrms",
+    "hr",
+    "attendance",
+    "leave-management"
+  ],
+  "author": "Dayflow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "mongodb": "3.6"
+  }
+}
