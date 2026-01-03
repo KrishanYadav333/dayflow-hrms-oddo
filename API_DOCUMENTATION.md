@@ -1,18 +1,32 @@
 # Dayflow HRMS API Documentation
 
-## Authentication Endpoints
+## Authentication
 
-### POST /auth/register
-Register a new user
+This API uses Clerk for authentication. All protected endpoints require a valid Clerk JWT token.
+
+**Headers for Protected Routes:**
+```
+Authorization: Bearer <clerk_jwt_token>
+```
+
+## Employee Endpoints
+
+### POST /employee/setup
+Setup employee profile after Clerk registration (Protected)
+
+**Headers:**
+```
+Authorization: Bearer <clerk_jwt_token>
+```
 
 **Request Body:**
 ```json
 {
   "employeeId": "EMP001",
-  "email": "john.doe@company.com",
-  "password": "password123",
-  "firstName": "John",
-  "lastName": "Doe",
+  "department": "Engineering",
+  "position": "Software Developer",
+  "joinDate": "2024-01-15",
+  "baseSalary": 75000,
   "role": "Employee"
 }
 ```
@@ -20,58 +34,31 @@ Register a new user
 **Response:**
 ```json
 {
-  "token": "jwt_token_here",
-  "user": {
-    "id": "user_id",
-    "employeeId": "EMP001",
-    "email": "john.doe@company.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "role": "Employee"
-  }
-}
-```
-
-### POST /auth/login
-User login
-
-**Request Body:**
-```json
-{
+  "id": "user_id",
+  "clerkId": "clerk_user_id",
+  "employeeId": "EMP001",
   "email": "john.doe@company.com",
-  "password": "password123"
+  "firstName": "John",
+  "lastName": "Doe",
+  "department": "Engineering",
+  "position": "Software Developer",
+  "role": "Employee"
 }
 ```
-
-**Response:**
-```json
-{
-  "token": "jwt_token_here",
-  "user": {
-    "id": "user_id",
-    "employeeId": "EMP001",
-    "email": "john.doe@company.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "role": "Employee"
-  }
-}
-```
-
-## Employee Endpoints
 
 ### GET /employee/profile
 Get current user's profile (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
 ```json
 {
   "id": "user_id",
+  "clerkId": "clerk_user_id",
   "employeeId": "EMP001",
   "email": "john.doe@company.com",
   "role": "Employee",
@@ -92,7 +79,7 @@ Get all employees (Admin only)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -117,7 +104,7 @@ Check in for the day (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -136,7 +123,7 @@ Check out for the day (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -157,7 +144,7 @@ Get own attendance records (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -179,7 +166,7 @@ Get all attendance records (Admin only)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -208,7 +195,7 @@ Apply for leave (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Request Body:**
@@ -240,7 +227,7 @@ Get own leave requests (Protected)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -263,7 +250,7 @@ Get all leave requests (Admin only)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Response:**
@@ -291,7 +278,7 @@ Approve or reject leave request (Admin only)
 
 **Headers:**
 ```
-Authorization: Bearer <jwt_token>
+Authorization: Bearer <clerk_jwt_token>
 ```
 
 **Request Body:**

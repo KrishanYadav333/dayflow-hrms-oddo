@@ -49,8 +49,9 @@ The system improves transparency, efficiency, and reliability in daily HR proces
 ## 5. Core Features
 
 ### Authentication
-- Email & password-based login
+- Clerk authentication (email/password, social logins)
 - Role-based access control (Employee / Admin)
+- Secure session management
 
 ### Employee Profile Management
 - Personal details
@@ -89,10 +90,12 @@ The system improves transparency, efficiency, and reliability in daily HR proces
 **Frontend**
 - React.js
 - Tailwind CSS
+- Clerk (Authentication)
 
 **Backend**
 - Node.js
 - Express.js
+- Clerk SDK
 
 **Database**
 - MongoDB Atlas (Free Tier)
@@ -115,11 +118,16 @@ The architecture is cloud-native, scalable, and cost-free.
 ### User Collection
 ```json
 {
-  "name": "Employee Name",
+  "clerkId": "clerk_user_id",
+  "employeeId": "EMP001",
   "email": "employee@email.com",
-  "password": "hashed_password",
+  "firstName": "John",
+  "lastName": "Doe",
   "role": "employee | admin",
-  "designation": "Software Engineer"
+  "department": "Engineering",
+  "position": "Software Engineer",
+  "joinDate": "2024-01-15",
+  "baseSalary": 75000
 }
 ```
 
@@ -163,8 +171,9 @@ The architecture is cloud-native, scalable, and cost-free.
 
 ## 11. Security Considerations
 
-- Passwords stored securely (hashed)
+- Clerk handles secure authentication and session management
 - Role-based access enforced at API level
+- JWT tokens validated via Clerk
 - Environment variables used for sensitive data
 - No hardcoded credentials
 
@@ -189,6 +198,7 @@ The architecture is cloud-native, scalable, and cost-free.
 ### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB Atlas account
+- Clerk account for authentication
 - Render account for deployment
 
 ### Local Development
@@ -202,7 +212,7 @@ npm run install-deps
 
 # Set up environment variables
 cp server/.env.example server/.env
-# Update MongoDB URI and JWT secret
+# Update MongoDB URI and Clerk keys
 
 # Start development servers
 npm run dev
