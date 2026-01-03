@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 // Import models
@@ -51,11 +50,10 @@ const seedData = async () => {
 
     // Create HR Admin
     console.log('\nCreating HR Admin...');
-    const hrPassword = await bcrypt.hash('admin123', 10);
     const hrAdmin = await User.create({
       employeeId: 'HR001',
       email: 'admin@dayflow.com',
-      password: hrPassword,
+      password: 'admin123',
       role: 'HR',
       firstName: 'Sarah',
       lastName: 'Johnson',
@@ -171,13 +169,12 @@ const seedData = async () => {
       }
     ];
 
-    const employeePassword = await bcrypt.hash('employee123', 10);
     const employees = [];
 
     for (const empData of employeesData) {
       const employee = await User.create({
         ...empData,
-        password: employeePassword,
+        password: 'employee123',
         role: 'Employee',
         phone: `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`,
         address: `${Math.floor(Math.random() * 999) + 1} Street, City ${Math.floor(Math.random() * 90000) + 10000}`,

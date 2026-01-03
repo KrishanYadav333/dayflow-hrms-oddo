@@ -40,8 +40,8 @@ const Login = () => {
     setLoading(true);
 
     const credentials = role === 'HR' 
-      ? { email: 'hr@dayflow.com', password: 'hr123456' }
-      : { email: 'employee@dayflow.com', password: 'emp123456' };
+      ? { email: 'admin@dayflow.com', password: 'admin123' }
+      : { email: 'john.doe@dayflow.com', password: 'employee123' };
 
     const result = await signin(credentials);
 
@@ -159,8 +159,8 @@ const Login = () => {
           </button>
           
           {showDevLogin && (
-            <div className="mt-3 space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <p className="text-xs text-gray-500 mb-3 text-center">Quick access for testing</p>
+            <div className="mt-3 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <p className="text-xs text-gray-500 mb-3 text-center font-semibold">Test Credentials</p>
               <button
                 onClick={() => handleDevLogin('HR')}
                 disabled={loading}
@@ -171,6 +171,9 @@ const Login = () => {
                 </svg>
                 HR Admin Access
               </button>
+              <p className="text-xs text-gray-600 text-center">
+                admin@dayflow.com / admin123
+              </p>
               <button
                 onClick={() => handleDevLogin('Employee')}
                 disabled={loading}
@@ -181,7 +184,9 @@ const Login = () => {
                 </svg>
                 Employee Access
               </button>
-              <p className="text-xs text-gray-400 text-center mt-2">No credentials needed</p>
+              <p className="text-xs text-gray-600 text-center">
+                john.doe@dayflow.com / employee123
+              </p>
             </div>
           )}
         </div>
