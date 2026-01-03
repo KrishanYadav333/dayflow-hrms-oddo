@@ -65,14 +65,31 @@ router.post('/signup', [
     const token = generateToken(user._id);
 
     // Send welcome email
+    console.log('📧 Attempting to send welcome email to:', user.email);
     try {
-      await sendEmail(
-        user.email,
-        'Welcome to Dayflow HRMS',
-        emailTemplates.welcome(user.firstName, user.employeeId)
-      );
+      const { Resend } = require('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const { data, error } = await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: user.email,
+        subject: 'Welcome to Dayflow HRMS',
+        html: `
+          <h2>Welcome to Dayflow HRMS!</h2>
+          <p>Hi ${user.firstName},</p>
+          <p>Welcome to the team! Your employee ID is <strong>${user.employeeId}</strong>.</p>
+          <p>You can now access the HRMS system to manage your attendance, apply for leaves, and view your profile.</p>
+          <p>Best regards,<br>HR Team</p>
+        `
+      });
+      
+      if (error) {
+        console.error('❌ Welcome email failed:', error);
+      } else {
+        console.log('✅ Welcome email sent successfully:', data);
+      }
     } catch (emailError) {
-      console.error('Welcome email failed:', emailError);
+      console.error('❌ Welcome email exception:', emailError);
     }
 
     res.status(201).json({
