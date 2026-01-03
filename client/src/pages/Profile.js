@@ -12,6 +12,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('resume');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const isOwnProfile = !id || id === user?.id;
   const profileId = isOwnProfile ? user?.id : id;
