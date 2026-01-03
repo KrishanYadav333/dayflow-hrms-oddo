@@ -52,6 +52,12 @@ const leaveSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Indexes for faster queries
+leaveSchema.index({ employeeId: 1, status: 1 });
+leaveSchema.index({ status: 1, startDate: -1 });
+leaveSchema.index({ employeeId: 1, startDate: -1 });
+leaveSchema.index({ createdAt: -1 });
+
 // Calculate number of days before saving
 leaveSchema.pre('validate', function(next) {
   if (this.startDate && this.endDate) {

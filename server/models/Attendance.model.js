@@ -36,8 +36,11 @@ const attendanceSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for faster queries
+// Indexes for faster queries
 attendanceSchema.index({ employeeId: 1, date: 1 }, { unique: true });
+attendanceSchema.index({ date: -1 });
+attendanceSchema.index({ employeeId: 1, date: -1 });
+attendanceSchema.index({ status: 1 });
 
 // Calculate working hours before saving
 attendanceSchema.pre('save', function(next) {

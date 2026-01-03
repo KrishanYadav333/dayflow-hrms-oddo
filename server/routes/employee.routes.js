@@ -91,7 +91,7 @@ router.put('/profile', protect, [
 // @access  Protected (Admin only)
 router.get('/all', protect, authorize('HR'), async (req, res) => {
   try {
-    const employees = await User.find().select('-password');
+    const employees = await User.find().select('-password').lean();
 
     res.status(200).json({
       success: true,
@@ -104,6 +104,49 @@ router.get('/all', protect, authorize('HR'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error retrieving employees',
+      data: null,
+      error: error.message
+    });
+  }
+});
+
+// @route   GET /api/employee/:id
+// @desc    Get employee by ID
+// @access  Protected
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const employee = await User.findById(req.params.id).select('-password').lean();
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found',
+        data: null,
+        error: 'Employee does not exist'
+      });
+    }
+
+    // Check if user is viewing their own profile or is HR
+    if (req.user._id.toString() !== req.params.id && req.user.role !== 'HR') {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this profile',
+        data: null,
+        error: 'Unauthorized access'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Employee retrieved successfully',
+      data: employee,
+      error: null
+    });
+  } catch (error) {
+    console.error('Get employee error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving employee',
       data: null,
       error: error.message
     });

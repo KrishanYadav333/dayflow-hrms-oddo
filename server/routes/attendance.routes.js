@@ -109,22 +109,25 @@ router.post('/checkout', protect, async (req, res) => {
 // @access  Protected
 router.get('/my', protect, async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, month, year } = req.query;
 
     const query = { employeeId: req.user._id };
 
-    // Add date range filter if provided
-    if (startDate || endDate) {
+    // Add date range filter
+    if (month && year) {
+      const start = new Date(year, month - 1, 1);
+      const end = new Date(year, month, 0, 23, 59, 59);
+      query.date = { $gte: start, $lte: end };
+    } else if (startDate || endDate) {
       query.date = {};
-      if (startDate) {
-        query.date.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        query.date.$lte = new Date(endDate);
-      }
+      if (startDate) query.date.$gte = new Date(startDate);
+      if (endDate) query.date.$lte = new Date(endDate);
     }
 
-    const attendance = await Attendance.find(query).sort({ date: -1 });
+    const attendance = await Attendance.find(query)
+      .sort({ date: -1 })
+      .limit(100)
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -148,20 +151,29 @@ router.get('/my', protect, async (req, res) => {
 // @access  Protected (Admin only)
 router.get('/all', protect, authorize('HR'), async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, startDate, endDate, limit = 100 } = req.query;
     
     let query = {};
     
-    // If date is provided, filter by that specific date
+    // Date filters
     if (date) {
       const queryDate = new Date(date);
       queryDate.setHours(0, 0, 0, 0);
-      query.date = queryDate;
+      const endDate = new Date(queryDate);
+      endDate.setHours(23, 59, 59, 999);
+      query.date = { $gte: queryDate, $lte: endDate };
+    } else if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
     }
     
     const attendance = await Attendance.find(query)
-      .populate('employeeId', 'firstName lastName employeeId')
-      .sort({ date: -1 });
+      .populate('employeeId', 'firstName lastName employeeId profilePicture')
+      .sort({ date: -1 })
+      .limit(parseInt(limit))
+      .lean();
 
     res.status(200).json({
       success: true,

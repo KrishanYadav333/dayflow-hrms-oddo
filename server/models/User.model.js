@@ -227,4 +227,8 @@ userSchema.methods.toJSON = function() {
   return obj;
 };
 
+// Add indexes for better query performance (some are already unique in schema)
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+
 module.exports = mongoose.model('User', userSchema);

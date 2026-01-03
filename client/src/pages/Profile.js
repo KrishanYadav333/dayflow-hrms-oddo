@@ -13,16 +13,30 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('resume');
   const [error, setError] = useState('');
 
+  // Use the ID from params if available, otherwise use current user's ID
+  const profileId = id || user?.id;
   const isOwnProfile = !id || id === user?.id;
-  const profileId = isOwnProfile ? user?.id : id;
 
   const fetchEmployee = useCallback(async () => {
-    try {
-      const response = await api.get(`/employee/${profileId}`);
-      setEmployee(response.data.data);
+    if (!profileId) {
+      setError('User not logged in');
       setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.get(`/employee/${profileId}`);
+      if (response.data.success) {
+        setEmployee(response.data.data);
+        setError('');
+      } else {
+        setError('Failed to load employee profile');
+      }
     } catch (error) {
-      setError('Failed to load employee profile');
+      console.error('Profile fetch error:', error);
+      setError(error.response?.data?.message || 'Failed to load employee profile');
+    } finally {
       setLoading(false);
     }
   }, [profileId]);

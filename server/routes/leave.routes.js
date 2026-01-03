@@ -107,7 +107,9 @@ router.get('/my', protect, async (req, res) => {
   try {
     const leaves = await Leave.find({ employeeId: req.user._id })
       .populate('approvedBy', 'firstName lastName')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -131,10 +133,15 @@ router.get('/my', protect, async (req, res) => {
 // @access  Protected (Admin only)
 router.get('/all', protect, authorize('HR'), async (req, res) => {
   try {
-    const leaves = await Leave.find()
-      .populate('employeeId', 'firstName lastName employeeId')
+    const { status, limit = 100 } = req.query;
+    const query = status ? { status } : {};
+
+    const leaves = await Leave.find(query)
+      .populate('employeeId', 'firstName lastName employeeId profilePicture')
       .populate('approvedBy', 'firstName lastName')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
 
     res.status(200).json({
       success: true,

@@ -13,16 +13,38 @@ const Employees = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchEmployees();
-    fetchTodayAttendance();
+    fetchData();
   }, []);
 
-  const fetchEmployees = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/employee/all');
-      setEmployees(response.data.data);
+      setLoading(true);
+      // Fetch both employees and attendance in parallel for better performance
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [employeesRes, attendanceRes] = await Promise.all([
+        api.get('/employee/all'),
+        api.get('/attendance/all', { params: { date: today.toISOString() } })
+      ]);
+
+      setEmployees(employeesRes.data.data);
+      
+      // Create attendance map
+      const attendanceMap = {};
+      attendanceRes.data.data.forEach(record => {
+        if (record.employeeId && record.employeeId._id) {
+          attendanceMap[record.employeeId._id] = {
+            checkedIn: !!record.checkIn,
+            checkedOut: !!record.checkOut,
+            status: record.status
+          };
+        }
+      });
+      setAttendanceToday(attendanceMap);
       setLoading(false);
     } catch (error) {
+      console.error('Fetch data error:', error);
       setError('Failed to load employees');
       setLoading(false);
     }
