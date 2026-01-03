@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
+const { sendEmail, emailTemplates } = require('../services/emailService');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -62,6 +63,17 @@ router.post('/signup', [
 
     // Generate token
     const token = generateToken(user._id);
+
+    // Send welcome email
+    try {
+      await sendEmail(
+        user.email,
+        'Welcome to Dayflow HRMS',
+        emailTemplates.welcome(user.firstName, user.employeeId)
+      );
+    } catch (emailError) {
+      console.error('Welcome email failed:', emailError);
+    }
 
     res.status(201).json({
       success: true,

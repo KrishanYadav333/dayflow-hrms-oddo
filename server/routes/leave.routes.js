@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth.middleware');
 const Leave = require('../models/Leave.model');
 const User = require('../models/User.model');
+const { sendEmail, emailTemplates } = require('../services/emailService');
 
 // @route   POST /api/leave/apply
 // @desc    Apply for leave
@@ -59,6 +60,28 @@ router.post('/apply', protect, [
       endDate: end,
       reason
     });
+
+    // Send notification to HR
+    try {
+      const hrUsers = await User.find({ role: 'HR' });
+      const employeeName = `${req.user.firstName} ${req.user.lastName}`;
+      
+      for (const hr of hrUsers) {
+        await sendEmail(
+          hr.email,
+          'New Leave Request',
+          emailTemplates.leaveRequest(
+            employeeName,
+            leaveType,
+            startDate,
+            endDate,
+            reason
+          )
+        );
+      }
+    } catch (emailError) {
+      console.error('Leave notification email failed:', emailError);
+    }
 
     res.status(201).json({
       success: true,
@@ -169,6 +192,27 @@ router.put('/:id/status', protect, authorize('HR'), [
     leave.approvalDate = new Date();
 
     await leave.save();
+
+    // Send approval/rejection email to employee
+    try {
+      const employee = await User.findById(leave.employeeId._id);
+      if (employee) {
+        await sendEmail(
+          employee.email,
+          `Leave Request ${status}`,
+          emailTemplates.leaveApproval(
+            employee.firstName,
+            leave.leaveType,
+            leave.startDate.toDateString(),
+            leave.endDate.toDateString(),
+            status,
+            comments
+          )
+        );
+      }
+    } catch (emailError) {
+      console.error('Leave approval email failed:', emailError);
+    }
 
     // Update leave balance if approved
     if (status === 'Approved') {
