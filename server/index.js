@@ -46,8 +46,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dayflow-h
 .then(() => console.log('[MongoDB] Connected successfully'))
 .catch((err) => console.error('[MongoDB] Connection error:', err));
 
-// Routes
-app.get('/', (req, res) => {
+// Serve React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+}
+
+// API Routes
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'Dayflow HRMS API is running',
@@ -62,10 +67,8 @@ app.use('/api/leave', leaveRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
 
-// Serve React app in production
+// Serve React app for all other routes in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-  
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
