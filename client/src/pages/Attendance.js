@@ -17,7 +17,18 @@ const Attendance = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await api.get('/attendance/my');
+      // Get current month's start and end dates
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      
+      // Fetch attendance for current month
+      const response = await api.get('/attendance/my', {
+        params: {
+          startDate: startOfMonth.toISOString(),
+          endDate: endOfMonth.toISOString()
+        }
+      });
       setAttendance(response.data.data);
       
       const today = new Date().toDateString();
@@ -147,7 +158,8 @@ const Attendance = () => {
         {/* Attendance History Table */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Attendance History</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Attendance History - {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+            <p className="text-sm text-gray-600 mt-1">Your attendance records for the current month</p>
           </div>
           
           <div className="overflow-x-auto">

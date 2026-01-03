@@ -148,7 +148,18 @@ router.get('/my', protect, async (req, res) => {
 // @access  Protected (Admin only)
 router.get('/all', protect, authorize('HR'), async (req, res) => {
   try {
-    const attendance = await Attendance.find()
+    const { date } = req.query;
+    
+    let query = {};
+    
+    // If date is provided, filter by that specific date
+    if (date) {
+      const queryDate = new Date(date);
+      queryDate.setHours(0, 0, 0, 0);
+      query.date = queryDate;
+    }
+    
+    const attendance = await Attendance.find(query)
       .populate('employeeId', 'firstName lastName employeeId')
       .sort({ date: -1 });
 

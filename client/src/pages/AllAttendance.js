@@ -14,7 +14,16 @@ const AllAttendance = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await api.get('/attendance/all');
+      // Get today's date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Fetch attendance for today only
+      const response = await api.get('/attendance/all', {
+        params: {
+          date: today.toISOString()
+        }
+      });
       setAttendance(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -40,8 +49,8 @@ const AllAttendance = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">All Attendance Records</h1>
-          <p className="text-gray-600 text-lg">View comprehensive attendance data for all employees</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Today's Attendance</h1>
+          <p className="text-gray-600 text-lg">Employees present on {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
 
         {error && (

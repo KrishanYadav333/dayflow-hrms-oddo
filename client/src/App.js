@@ -57,6 +57,14 @@ function App() {
             } 
           />
           <Route 
+            path="/profile/:id" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/attendance" 
             element={
               <ProtectedRoute>
