@@ -1,26 +1,42 @@
 const { Resend } = require('resend');
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Initialize Resend only when needed
+let resend = null;
+
+const getResendInstance = () => {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY environment variable is required');
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+};
 
 const sendEmail = async (to, subject, html) => {
   try {
-    if (!resend) {
-      console.warn('Email service not configured - skipping email to:', to);
-      return { success: true, data: { message: 'Email service not configured' } };
-    }
-
-    const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@dayflow-hrms.com',
-      to,
+    const resendInstance = getResendInstance();
+    
+    const { data, error } = await resendInstance.emails.send({
+      from: 'onboarding@resend.dev',
+      to: to,
       subject,
       html,
     });
 
     if (error) {
       console.error('Email send error:', error);
+      
+      // Handle rate limiting gracefully
+      if (error.name === 'rate_limit_exceeded') {
+        console.log('⚠️ Rate limit exceeded, email will be retried later');
+        return { success: false, error: 'Rate limit exceeded', retry: true };
+      }
+      
       return { success: false, error };
     }
 
+    console.log('✅ Email sent successfully:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Email service error:', error);
