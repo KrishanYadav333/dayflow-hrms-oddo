@@ -39,3 +39,5 @@ Dayflow - Human Resource Management System - 8 hours.jpg
 dayflow.md
 
 .env
+.env.local
+.env.development.local  

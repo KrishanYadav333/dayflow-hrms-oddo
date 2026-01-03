@@ -8,6 +8,7 @@ const Employees = () => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [attendanceToday, setAttendanceToday] = useState({});
+  const [leavesToday, setLeavesToday] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +24,10 @@ const Employees = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const [employeesRes, attendanceRes] = await Promise.all([
+      const [employeesRes, attendanceRes, leavesRes] = await Promise.all([
         api.get('/employee/all'),
-        api.get('/attendance/all', { params: { date: today.toISOString() } })
+        api.get('/attendance/all', { params: { date: today.toISOString() } }),
+        api.get('/leave/all').catch(() => ({ data: { data: [] } }))
       ]);
 
       setEmployees(employeesRes.data.data);
@@ -42,6 +44,29 @@ const Employees = () => {
         }
       });
       setAttendanceToday(attendanceMap);
+
+      // Create leave map for today
+      const leaveMap = {};
+      if (leavesRes.data.data) {
+        leavesRes.data.data.forEach(leave => {
+          if (leave.status === 'Approved' && leave.employeeId) {
+            const leaveStart = new Date(leave.startDate);
+            const leaveEnd = new Date(leave.endDate);
+            leaveStart.setHours(0, 0, 0, 0);
+            leaveEnd.setHours(23, 59, 59, 999);
+            
+            if (today >= leaveStart && today <= leaveEnd) {
+              const empId = typeof leave.employeeId === 'object' ? leave.employeeId._id : leave.employeeId;
+              leaveMap[empId] = {
+                leaveType: leave.leaveType,
+                reason: leave.reason
+              };
+            }
+          }
+        });
+      }
+      setLeavesToday(leaveMap);
+      
       setLoading(false);
     } catch (error) {
       console.error('Fetch data error:', error);
@@ -76,30 +101,37 @@ const Employees = () => {
   };
 
   const getStatusIndicator = (employeeId) => {
+    // Check if employee is on approved leave
+    const onLeave = leavesToday[employeeId];
+    if (onLeave) {
+      return {
+        color: 'bg-transparent',
+        icon: '✈️',
+        text: 'On Leave',
+        tooltip: `On ${onLeave.leaveType} Leave`
+      };
+    }
+
     const attendance = attendanceToday[employeeId];
     if (!attendance) {
       return {
         color: 'bg-yellow-400',
-        text: 'Not Applied',
-        tooltip: 'Employee has not applied time off and is absent'
+        icon: '●',
+        text: 'Absent',
+        tooltip: 'Employee has not checked in'
       };
     }
-    if (attendance.checkedIn && !attendance.checkedOut) {
+    if (attendance.checkedIn) {
       return {
         color: 'bg-green-500',
+        icon: '●',
         text: 'Present',
         tooltip: 'Employee is present in the office'
       };
     }
-    if (attendance.checkedOut) {
-      return {
-        color: 'bg-blue-500',
-        text: 'Checked Out',
-        tooltip: 'Employee has checked out'
-      };
-    }
     return {
       color: 'bg-red-500',
+      icon: '●',
       text: 'Absent',
       tooltip: 'Employee is absent'
     };
@@ -133,8 +165,7 @@ const Employees = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Employees</h1>
-          <p className="text-gray-600 text-lg">Click on any employee card to view their detailed profile</p>
+          <h1 className="text-3xl font-bold text-gray-900">Employees</h1>
         </div>
 
         {/* Search Bar */}
@@ -145,9 +176,9 @@ const Employees = () => {
               placeholder="Search employees by name, ID, or department..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
             />
-            <svg className="w-5 h-5 text-gray-400 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -170,7 +201,7 @@ const Employees = () => {
               <div
                 key={employee._id}
                 onClick={() => handleCardClick(employee._id)}
-                className="bg-white rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {/* Header with Avatar and Status */}
                 <div className="flex items-start justify-between mb-4">
@@ -180,11 +211,20 @@ const Employees = () => {
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-bright to-primary-medium flex items-center justify-center text-white text-xl font-bold">
                         {employee.firstName[0]}{employee.lastName[0]}
                       </div>
-                      {/* Status Dot */}
-                      <div 
-                        className={`absolute -bottom-1 -right-1 w-5 h-5 ${status.color} border-2 border-white rounded-full`}
-                        title={status.tooltip}
-                      />
+                      {/* Status Dot or Emoji */}
+                      {status.icon === '✈️' ? (
+                        <div 
+                          className="absolute -bottom-1 -right-1 text-xl"
+                          title={status.tooltip}
+                        >
+                          {status.icon}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`absolute -bottom-1 -right-1 w-5 h-5 ${status.color} border-2 border-white rounded-full`}
+                          title={status.tooltip}
+                        />
+                      )}
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">

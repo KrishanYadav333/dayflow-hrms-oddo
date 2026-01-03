@@ -12,10 +12,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('resume');
   const [error, setError] = useState('');
+  const [success] = useState('');
 
   // Use the ID from params if available, otherwise use current user's ID
   const profileId = id || user?.id;
-  const isOwnProfile = !id || id === user?.id;
 
   const fetchEmployee = useCallback(async () => {
     if (!profileId) {
@@ -309,74 +309,29 @@ const Profile = () => {
             {activeTab === 'private' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">All Skills</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Company</label>
                   <input
                     type="text"
                     readOnly
-                    value={employee.skills?.join(', ') || 'N/A'}
+                    value={employee.company || 'N/A'}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Number</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
                   <input
                     type="text"
                     readOnly
-                    value="N/A"
+                    value={employee.department || 'N/A'}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Residing Address</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Manager</label>
                   <input
                     type="text"
                     readOnly
-                    value={employee.address || 'N/A'}
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Bank Name</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="N/A"
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nationality</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="N/A"
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">IFSC Code</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="N/A"
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Personal Email</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={employee.email}
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">PAN No</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="N/A"
+                    value={employee.manager || 'N/A'}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
@@ -385,16 +340,34 @@ const Profile = () => {
                   <input
                     type="text"
                     readOnly
-                    value="N/A"
+                    value={employee.gender || 'N/A'}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">UAN NO</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Residing Address</label>
                   <input
                     type="text"
                     readOnly
-                    value="N/A"
+                    value={employee.residingAddress || employee.address || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nationality</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.nationality || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Personal Email</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.personalEmail || employee.email}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
@@ -403,16 +376,7 @@ const Profile = () => {
                   <input
                     type="text"
                     readOnly
-                    value="N/A"
-                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Emp Code</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={employee.employeeId}
+                    value={employee.maritalStatus || 'N/A'}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>
@@ -421,7 +385,61 @@ const Profile = () => {
                   <input
                     type="text"
                     readOnly
-                    value={new Date(employee.joinDate).toLocaleDateString()}
+                    value={employee.dateOfJoining ? new Date(employee.dateOfJoining).toLocaleDateString() : new Date(employee.joinDate).toLocaleDateString()}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Number</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.accountNumber || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Bank Name</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.bankName || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">IFSC Code</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.ifscCode || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">PAN No</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.panNo || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">UAN NO</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.uanNo || 'N/A'}
+                    className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Emp Code</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={employee.bankDetails?.empCode || employee.employeeId}
                     className="w-full px-4 py-2 border-b border-gray-300 focus:border-primary-bright focus:outline-none"
                   />
                 </div>

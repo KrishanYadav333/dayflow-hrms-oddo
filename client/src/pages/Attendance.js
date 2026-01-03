@@ -118,7 +118,7 @@ const Attendance = () => {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-bright"></div>
         </div>
       </div>
     );
@@ -129,14 +129,16 @@ const Attendance = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance</h1>
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Attendance</h1>
         </div>
 
-        {/* Navigation Bar */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        {/* Month Navigation & Stats Bar */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            {/* Left: Month Navigation */}
+            <div className="flex items-center gap-3">
               <button
                 onClick={goToPreviousMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -145,6 +147,17 @@ const Attendance = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
+              
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i} value={i}>{getMonthName(i)}</option>
+                ))}
+              </select>
+              
               <button
                 onClick={goToNextMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -153,40 +166,29 @@ const Attendance = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-              
-              <div className="flex items-center gap-2">
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
-                >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i} value={i}>{getMonthName(i)}</option>
-                  ))}
-                </select>
-              </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="text-center px-4 py-2 bg-blue-50 rounded-lg">
-                <p className="text-xs text-gray-600">Count of days present</p>
-                <p className="text-lg font-bold text-primary-bright">{stats.daysPresent}</p>
+            {/* Right: Stats Cards */}
+            <div className="flex items-center gap-4">
+              <div className="text-center px-6 py-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-gray-600 mb-1">Count of days present</p>
+                <p className="text-2xl font-bold text-primary-bright">{stats.daysPresent}</p>
               </div>
-              <div className="text-center px-4 py-2 bg-yellow-50 rounded-lg">
-                <p className="text-xs text-gray-600">Leaves count</p>
-                <p className="text-lg font-bold text-yellow-600">{stats.leavesCount}</p>
+              <div className="text-center px-6 py-3 bg-yellow-50 rounded-lg">
+                <p className="text-xs text-gray-600 mb-1">Leaves count</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.leavesCount}</p>
               </div>
-              <div className="text-center px-4 py-2 bg-green-50 rounded-lg">
-                <p className="text-xs text-gray-600">Total working days</p>
-                <p className="text-lg font-bold text-green-600">{stats.totalWorkingDays}</p>
+              <div className="text-center px-6 py-3 bg-green-50 rounded-lg">
+                <p className="text-xs text-gray-600 mb-1">Total working days</p>
+                <p className="text-2xl font-bold text-green-600">{stats.totalWorkingDays}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Display current month/year */}
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-700">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900">
             {getMonthName(selectedMonth)} {selectedYear}
           </h2>
         </div>
@@ -210,49 +212,47 @@ const Attendance = () => {
         )}
 
         {/* Check In/Out Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-            <div className="p-2 bg-primary-bright/10 rounded-lg">
-              <svg className="w-7 h-7 text-primary-bright" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <svg className="w-6 h-6 text-primary-bright" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             Today's Attendance
           </h2>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex gap-4">
             <button
               onClick={handleCheckIn}
               disabled={checkedInToday}
-              className={`flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-md hover:shadow-xl transform hover:-translate-y-1 ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all ${
                 checkedInToday
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-500 hover:bg-green-600 text-white shadow-sm'
               }`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {checkedInToday ? 'Checked In' : 'Check In'}
+              Check In
             </button>
             <button
               onClick={handleCheckOut}
               disabled={!checkedInToday || checkedOutToday}
-              className={`flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-md hover:shadow-xl transform hover:-translate-y-1 ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all ${
                 !checkedInToday || checkedOutToday
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-300 hover:bg-gray-400 text-gray-700 shadow-sm'
               }`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              {checkedOutToday ? 'Checked Out' : 'Check Out'}
+              Check Out
             </button>
           </div>
         </div>
 
         {/* Attendance History Table */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

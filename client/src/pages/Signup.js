@@ -76,16 +76,15 @@ const Signup = () => {
       <div className="max-w-3xl w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center gap-3 mb-4">
-            <div className="w-14 h-14 bg-primary-bright rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">D</span>
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-primary-dark">Dayflow</h1>
-              <p className="text-xs text-gray-500 tracking-wider">HUMAN RESOURCE MANAGEMENT</p>
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 bg-gradient-to-br from-primary-bright to-primary-medium rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-3xl">D</span>
+              </div>
+              <span className="text-3xl font-bold text-gray-800">Dayflow HRMS</span>
             </div>
           </div>
-          <p className="text-gray-600 mt-3 text-base font-medium">Create your account</p>
+          <p className="text-gray-600 text-base font-medium">Create your account</p>
         </div>
 
         {/* Signup Card */}
@@ -129,19 +128,37 @@ const Signup = () => {
 
               <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name <span className="text-red-500">*</span>
+                Last Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
+                name="lastName"
+                value={formData.lastName}
                 onChange={handleChange}
                 required
                 minLength="2"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-primary-bright transition duration-200"
-                placeholder="Full Name"
+                placeholder="Doe"
               />
             </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  minLength="2"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-primary-bright transition duration-200"
+                  placeholder="John"
+                />
+              </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

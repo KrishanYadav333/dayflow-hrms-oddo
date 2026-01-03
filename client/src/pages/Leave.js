@@ -11,7 +11,8 @@ const Leave = () => {
     leaveType: 'Paid',
     startDate: '',
     endDate: '',
-    reason: ''
+    reason: '',
+    attachment: null
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -36,9 +37,10 @@ const Leave = () => {
   };
 
   const handleChange = (e) => {
+    const { name, value, files } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: files ? files[0] : value
     });
   };
 
@@ -48,14 +50,29 @@ const Leave = () => {
     setSuccess('');
 
     try {
-      await api.post('/leave/apply', formData);
+      const submitData = new FormData();
+      submitData.append('leaveType', formData.leaveType);
+      submitData.append('startDate', formData.startDate);
+      submitData.append('endDate', formData.endDate);
+      submitData.append('reason', formData.reason);
+      if (formData.attachment) {
+        submitData.append('attachment', formData.attachment);
+      }
+
+      await api.post('/leave/apply', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       setSuccess('Leave application submitted successfully!');
       setShowForm(false);
       setFormData({
         leaveType: 'Paid',
         startDate: '',
         endDate: '',
-        reason: ''
+        reason: '',
+        attachment: null
       });
       fetchLeaves();
       setTimeout(() => setSuccess(''), 3000);
@@ -82,7 +99,7 @@ const Leave = () => {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-bright"></div>
         </div>
       </div>
     );
@@ -93,15 +110,16 @@ const Leave = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Time Off</h1>
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Time Off</h1>
         </div>
 
         {/* Leave Allocation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Paid</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">Paid</h3>
               <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -111,8 +129,8 @@ const Leave = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Sick</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">Sick</h3>
               <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -126,7 +144,7 @@ const Leave = () => {
               onClick={() => setShowForm(!showForm)}
               className="w-full h-full flex flex-col items-center justify-center text-primary-bright hover:text-primary-medium transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-primary-bright/10 flex items-center justify-center mb-3">
+              <div className="w-12 h-12 rounded-full bg-primary-bright/10 flex items-center justify-center mb-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
@@ -156,17 +174,15 @@ const Leave = () => {
 
         {/* Leave Application Form */}
         {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="p-2 bg-primary-bright/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary-bright" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </span>
-              <h3 className="text-2xl font-bold text-gray-800">Apply for Leave</h3>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary-bright" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Apply for Leave
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Leave Type <span className="text-red-500">*</span>
@@ -176,7 +192,7 @@ const Leave = () => {
                     value={formData.leaveType}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent transition-all duration-200 shadow-sm hover:border-gray-400"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
                   >
                     <option value="Paid">Paid Leave</option>
                     <option value="Sick">Sick Leave</option>
@@ -195,7 +211,7 @@ const Leave = () => {
                     onChange={handleChange}
                     required
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent transition-all duration-200 shadow-sm hover:border-gray-400"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
                   />
                 </div>
 
@@ -210,7 +226,7 @@ const Leave = () => {
                     onChange={handleChange}
                     required
                     min={formData.startDate || new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent transition-all duration-200 shadow-sm hover:border-gray-400"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
                   />
                 </div>
               </div>
@@ -225,19 +241,50 @@ const Leave = () => {
                   onChange={handleChange}
                   required
                   minLength="10"
-                  rows="4"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent transition-all duration-200 shadow-sm hover:border-gray-400"
+                  rows="3"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
                   placeholder="Please provide a reason for your leave (minimum 10 characters)"
                 />
               </div>
 
+              {/* File Upload for Sick Leave */}
+              {formData.leaveType === 'Sick' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Medical Certificate {formData.leaveType === 'Sick' && <span className="text-red-500">*</span>}
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <label className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-700">Choose File</span>
+                      <input
+                        type="file"
+                        name="attachment"
+                        onChange={handleChange}
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        className="hidden"
+                        required={formData.leaveType === 'Sick'}
+                      />
+                    </label>
+                    {formData.attachment && (
+                      <span className="text-sm text-gray-600 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        {formData.attachment.name}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 5MB)</p>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
                 Submit Application
               </button>
             </form>
@@ -245,7 +292,7 @@ const Leave = () => {
         )}
 
         {/* Leave History */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {leaves.length === 0 && !showForm ? (
             <div className="p-12 text-center">
               <p className="text-gray-500 text-lg">No leave requests found</p>

@@ -30,6 +30,10 @@ const leaveSchema = new mongoose.Schema({
     trim: true,
     minlength: [10, 'Reason must be at least 10 characters long']
   },
+  attachment: {
+    type: String,
+    default: null
+  },
   status: {
     type: String,
     enum: ['Pending', 'Approved', 'Rejected'],

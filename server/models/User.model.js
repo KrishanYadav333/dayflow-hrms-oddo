@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Company Information
+  company: {
+    type: String,
+    trim: true
+  },
   department: {
     type: String,
     trim: true
@@ -54,6 +59,38 @@ const userSchema = new mongoose.Schema({
   position: {
     type: String,
     trim: true
+  },
+  manager: {
+    type: String,
+    trim: true
+  },
+  // Personal Information
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other', ''],
+    default: ''
+  },
+  nationality: {
+    type: String,
+    trim: true
+  },
+  personalEmail: {
+    type: String,
+    trim: true
+  },
+  maritalStatus: {
+    type: String,
+    enum: ['Single', 'Married', 'Divorced', 'Widowed', ''],
+    default: ''
+  },
+  residingAddress: {
+    type: String,
+    trim: true
+  },
+  // Date fields
+  dateOfJoining: {
+    type: Date,
+    default: null
   },
   joinDate: {
     type: Date,
@@ -170,6 +207,33 @@ const userSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
     default: null
+  },
+  // Bank Details
+  bankDetails: {
+    accountNumber: {
+      type: String,
+      trim: true
+    },
+    bankName: {
+      type: String,
+      trim: true
+    },
+    ifscCode: {
+      type: String,
+      trim: true
+    },
+    panNo: {
+      type: String,
+      trim: true
+    },
+    uanNo: {
+      type: String,
+      trim: true
+    },
+    empCode: {
+      type: String,
+      trim: true
+    }
   },
   documents: [{
     name: String,

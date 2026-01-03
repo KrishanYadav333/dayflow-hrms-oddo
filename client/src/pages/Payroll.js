@@ -125,7 +125,7 @@ const Payroll = () => {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-bright"></div>
         </div>
       </div>
     );
@@ -136,15 +136,13 @@ const Payroll = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+        {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Payroll Management</h1>
-          <p className="text-gray-600 text-lg">
-            {isAdmin ? 'Manage employee salary information and payslips' : 'View your salary details and payslips'}
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Payroll Management</h1>
         </div>
 
         {/* Month/Year Selector */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <label className="text-sm font-semibold text-gray-700">Select Period:</label>
             <select
@@ -192,32 +190,32 @@ const Payroll = () => {
           </div>
         )}
 
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-primary-bright to-primary-medium text-white">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Employee ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Payable Days</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Base Salary</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Allowances</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Deductions</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Net Salary</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Final Payable</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Employee ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Payable Days</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Base Salary</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Allowances</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Deductions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Net Salary</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Final Payable</th>
                   {isAdmin && (
-                    <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Actions</th>
                   )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {employees.map((employee, index) => (
-                  <tr key={employee._id} className={`transition-colors hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                    <td className="px-6 py-4 text-sm font-bold text-gray-900">{employee.employeeId}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                  <tr key={employee._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-900">{employee.employeeId}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {employee.firstName} {employee.lastName}
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-primary-bright">
+                    <td className="px-6 py-4 text-sm text-gray-900">
                       {calculatePayableDays(employee._id).toFixed(1)} days
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">

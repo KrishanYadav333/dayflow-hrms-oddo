@@ -1,15 +1,45 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const { body, validationResult } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth.middleware');
 const Leave = require('../models/Leave.model');
 const User = require('../models/User.model');
 const { sendEmail, emailTemplates } = require('../services/emailService');
 
+// Configure multer for leave attachments
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'leave-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/') || 
+      file.mimetype === 'application/pdf' ||
+      file.mimetype === 'application/msword' ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only images and documents are allowed.'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: fileFilter
+});
+
 // @route   POST /api/leave/apply
 // @desc    Apply for leave
 // @access  Protected
-router.post('/apply', protect, [
+router.post('/apply', protect, upload.single('attachment'), [
   body('leaveType').isIn(['Paid', 'Sick', 'Unpaid']).withMessage('Leave type must be Paid, Sick, or Unpaid'),
   body('startDate').isISO8601().withMessage('Valid start date is required'),
   body('endDate').isISO8601().withMessage('Valid end date is required'),
@@ -53,13 +83,20 @@ router.post('/apply', protect, [
     }
 
     // Create leave request
-    const leave = await Leave.create({
+    const leaveData = {
       employeeId: req.user._id,
       leaveType,
       startDate: start,
       endDate: end,
       reason
-    });
+    };
+
+    // Add attachment if provided
+    if (req.file) {
+      leaveData.attachment = `/uploads/${req.file.filename}`;
+    }
+
+    const leave = await Leave.create(leaveData);
 
     // Send notification to HR
     try {

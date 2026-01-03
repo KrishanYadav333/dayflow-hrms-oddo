@@ -59,7 +59,7 @@ const AllAttendance = () => {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-bright"></div>
         </div>
       </div>
     );
@@ -70,12 +70,13 @@ const AllAttendance = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance</h1>
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Attendance</h1>
         </div>
 
         {/* Search and Navigation Bar */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1 max-w-md">
               <div className="relative">

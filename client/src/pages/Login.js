@@ -58,16 +58,15 @@ const Login = () => {
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center gap-3 mb-4">
-            <div className="w-14 h-14 bg-primary-bright rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">D</span>
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-primary-dark">Dayflow</h1>
-              <p className="text-xs text-gray-500 tracking-wider">HUMAN RESOURCE MANAGEMENT</p>
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 bg-gradient-to-br from-primary-bright to-primary-medium rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-3xl">D</span>
+              </div>
+              <span className="text-3xl font-bold text-gray-800">Dayflow HRMS</span>
             </div>
           </div>
-          <p className="text-gray-600 mt-3 text-base font-medium">Every workday, perfectly aligned.</p>
+          <p className="text-gray-600 text-base font-medium">Every workday, perfectly aligned.</p>
         </div>
 
         {/* Login Card */}
