@@ -18,8 +18,8 @@ const sendEmail = async (to, subject, html) => {
     const resendInstance = getResendInstance();
     
     const { data, error } = await resendInstance.emails.send({
-      from: 'Dayflow HRMS <onboarding@resend.dev>',
-      to: to, // This will send to the actual user's email
+      from: 'onboarding@resend.dev',
+      to: to,
       subject,
       html,
     });
