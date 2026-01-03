@@ -7,15 +7,19 @@ import api from '../api';
 const Payroll = () => {
   const { isAdmin } = useAuth();
   const [employees, setEmployees] = useState([]);
+  const [payrollData, setPayrollData] = useState({});
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+    fetchPayrollData();
+  }, [selectedMonth, selectedYear]);
 
   const fetchEmployees = async () => {
     try {
@@ -25,6 +29,32 @@ const Payroll = () => {
     } catch (error) {
       setError('Failed to load employee data');
       setLoading(false);
+    }
+  };
+
+  const fetchPayrollData = async () => {
+    try {
+      // Get attendance data for the selected month
+      const startDate = new Date(selectedYear, selectedMonth, 1);
+      const endDate = new Date(selectedYear, selectedMonth + 1, 0);
+      
+      const response = await api.get('/stats/attendance-summary', {
+        params: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        }
+      });
+      
+      // Create a map of employee attendance data
+      const dataMap = {};
+      if (response.data.data) {
+        response.data.data.forEach(item => {
+          dataMap[item.employeeId] = item;
+        });
+      }
+      setPayrollData(dataMap);
+    } catch (error) {
+      console.error('Failed to load payroll data:', error);
     }
   };
 
@@ -58,6 +88,43 @@ const Payroll = () => {
     return (parseFloat(base) || 0) + (parseFloat(allowances) || 0) - (parseFloat(deductions) || 0);
   };
 
+  const calculatePayableDays = (employeeId) => {
+    const data = payrollData[employeeId];
+    if (!data) return 0;
+    
+    // Total working days in month minus leave days
+    const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const workingDays = totalDays - 8; // Assuming ~8 Sundays/holidays per month
+    const presentDays = data.presentDays || 0;
+    const paidLeaveDays = data.paidLeaveDays || 0;
+    const halfDays = (data.halfDays || 0) * 0.5;
+    
+    // Payable days = Present days + Paid leave days + Half of half-days
+    return presentDays + paidLeaveDays + halfDays;
+  };
+
+  const calculateFinalSalary = (employee) => {
+    const baseSalary = parseFloat(employee.baseSalary) || 0;
+    const allowances = parseFloat(employee.allowances) || 0;
+    const deductions = parseFloat(employee.deductions) || 0;
+    const netSalary = baseSalary + allowances - deductions;
+    
+    // Calculate per-day rate
+    const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const workingDays = totalDays - 8; // Assuming ~8 Sundays/holidays
+    const perDayRate = netSalary / workingDays;
+    
+    // Calculate payable amount based on attendance
+    const payableDays = calculatePayableDays(employee._id);
+    return (perDayRate * payableDays).toFixed(2);
+  };
+
+  const getMonthName = (monthIndex) => {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[monthIndex];
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -77,8 +144,39 @@ const Payroll = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Payroll Management</h1>
           <p className="text-gray-600 text-lg">
-            {isAdmin ? 'Manage employee salary information' : 'View your salary details'}
+            {isAdmin ? 'Manage employee salary information and payslips' : 'View your salary details and payslips'}
           </p>
+        </div>
+
+        {/* Month/Year Selector */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="text-sm font-semibold text-gray-700">Select Period:</label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i}>{getMonthName(i)}</option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-bright focus:border-transparent"
+            >
+              {Array.from({ length: 5 }, (_, i) => {
+                const year = new Date().getFullYear() - 2 + i;
+                return <option key={year} value={year}>{year}</option>;
+              })}
+            </select>
+            <div className="ml-auto">
+              <span className="text-sm font-semibold text-primary-bright">
+                Payroll for {getMonthName(selectedMonth)} {selectedYear}
+              </span>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -106,10 +204,12 @@ const Payroll = () => {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Employee ID</th>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Payable Days</th>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Base Salary</th>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Allowances</th>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Deductions</th>
                   <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Net Salary</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Final Payable</th>
                   {isAdmin && (
                     <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">Actions</th>
                   )}
@@ -121,6 +221,9 @@ const Payroll = () => {
                     <td className="px-6 py-4 text-sm font-bold text-gray-900">{employee.employeeId}</td>
                     <td className="px-6 py-4 text-sm font-semibold text-gray-900">
                       {employee.firstName} {employee.lastName}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-primary-bright">
+                      {calculatePayableDays(employee._id).toFixed(1)} days
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">
                       {editingId === employee._id ? (
@@ -158,11 +261,14 @@ const Payroll = () => {
                         `$${employee.deductions || 0}`
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-green-600">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-900">
                       ${editingId === employee._id
                         ? calculateNetSalary(editData.baseSalary, editData.allowances, editData.deductions)
                         : calculateNetSalary(employee.baseSalary, employee.allowances, employee.deductions)
                       }
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-green-600 text-lg">
+                      ${calculateFinalSalary(employee)}
                     </td>
                     {isAdmin && (
                       <td className="px-6 py-4 text-center">
